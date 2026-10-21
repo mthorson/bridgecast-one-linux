@@ -1,0 +1,37 @@
+pkgname=bridgecast-one-linux
+pkgver=@VERSION@
+pkgrel=1
+pkgdesc='Unofficial Linux controller for the Roland BRIDGE CAST ONE audio mixer'
+arch=('any')
+url='https://github.com/mthorson/bridgecast-one-linux'
+license=('unknown')
+depends=('python' 'python-pyqt6' 'alsa-utils' 'alsa-lib')
+source=("$pkgname-$pkgver-linux.tar.gz")
+sha256sums=('@SHA256@')
+
+package() {
+    local source_dir="$srcdir/$pkgname-$pkgver"
+    install -d "$pkgdir/usr/share/$pkgname/assets" "$pkgdir/usr/bin" \
+        "$pkgdir/usr/share/applications"
+    install -m644 "$source_dir/"*.py "$pkgdir/usr/share/$pkgname/"
+    install -m644 "$source_dir/assets/"*.png "$pkgdir/usr/share/$pkgname/assets/"
+    install -Dm644 "$source_dir/assets/bridgecast-linux-icon.png" \
+        "$pkgdir/usr/share/icons/hicolor/512x512/apps/bridgecast-one-linux.png"
+
+    cat > "$pkgdir/usr/bin/bridgecast-one-linux" <<'EOF'
+#!/bin/sh
+exec /usr/bin/python /usr/share/bridgecast-one-linux/bridgecast_gui.py "$@"
+EOF
+    chmod 755 "$pkgdir/usr/bin/bridgecast-one-linux"
+
+    cat > "$pkgdir/usr/share/applications/bridgecast-one-linux.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=BRIDGE CAST ONE for Linux
+Comment=Configure the BRIDGE CAST ONE device mixer
+Exec=bridgecast-one-linux
+Icon=bridgecast-one-linux
+Terminal=false
+Categories=AudioVideo;Audio;
+EOF
+}

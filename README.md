@@ -15,7 +15,12 @@ The app uses the device's APP MIDI port and does not need Roland's Windows or ma
 
 ## Install and run
 
-Install ALSA utilities and `libasound` using your distribution's package manager. Then, from this repository:
+The [v0.1.0 release](https://github.com/mthorson/bridgecast-one-linux/releases/tag/v0.1.0) includes two Linux downloads:
+
+- **CachyOS / Arch Linux:** install `bridgecast-one-linux-0.1.0-1-any.pkg.tar.zst` with `sudo pacman -U ./bridgecast-one-linux-0.1.0-1-any.pkg.tar.zst`. Pacman handles the Python, PyQt6, and ALSA package dependencies.
+- **Other distributions:** install Python 3 with PyQt6, ALSA utilities, and `libasound` using your distribution's package manager. Extract `bridgecast-one-linux-0.1.0-linux.tar.gz` and run `./install.sh` inside the extracted folder. This copies the app into your user data directory and adds a desktop launcher without root privileges.
+
+To run directly from this repository instead:
 
 ```sh
 python3 -m venv .venv
@@ -59,6 +64,8 @@ python3 -m unittest -q test_bridgecast_protocol.py
 ```
 
 See [CHANGELOG.md](CHANGELOG.md) for the release scope.
+
+Both release downloads are built from the `v0.1.0` tag with `bash packaging/build-release.sh`. The installer lives in `packaging/install.sh`; the Arch package template is in `packaging/arch/`.
 
 ## Artwork and ownership
 
