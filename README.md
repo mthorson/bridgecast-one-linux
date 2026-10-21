@@ -2,6 +2,8 @@
 
 An unofficial Linux GUI for the Roland BRIDGE CAST ONE mixer. It shows live level meters and provides controls for the device settings currently supported by this project.
 
+![BRIDGE CAST ONE Linux home screen](screenshots/bridge-cast-one-linux-home.png)
+
 ## Run
 
 Connect the BRIDGE CAST ONE by USB with its hardware switch set to **PC**. Install Python 3, PyQt6, ALSA utilities (`amidi`), and `libasound`, then run:
