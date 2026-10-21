@@ -22,6 +22,7 @@ from bridgecast_protocol import (
     OUTPUT_MUTES, PERSONAL_FADERS, PERSONAL_MUTES, STREAM_FADERS, STREAM_MUTES,
 )
 ASSETS = Path(__file__).resolve().parent / "assets"
+APP_VERSION = "0.1.0"
 COLORS = ("#ed4654", "#ffbf24", "#38bf79", "#3d9cff", "#ddb565", "#73a8f8", "#b992db")
 FEATURED_COLORS = {0: "#66676a", 2: "#00a7f5", 3: "#a900df"}
 FEATURED_SOURCES = {0: "MIC", 2: "CHAT", 3: "MUSIC"}
@@ -200,7 +201,7 @@ class BridgeCastApp(QMainWindow):
         self.mic_controls: dict[int, tuple[QWidget, QLabel | None]] = {}
         self.mic_gain_controls: dict[int, tuple[QSlider, QLabel]] = {}
         self.nav_buttons: list[QPushButton] = []
-        self.setWindowTitle("BRIDGE CAST ONE")
+        self.setWindowTitle(f"BRIDGE CAST ONE for Linux v{APP_VERSION}")
         self.setMinimumSize(1100, 720)
         self.resize(1346, 740)
         icon = ASSETS / "bridgecast-linux-icon.png"
@@ -243,7 +244,8 @@ class BridgeCastApp(QMainWindow):
         driver.setEnabled(False)
         help_menu = menu.addMenu("Help")
         help_menu.addAction("About", lambda: QMessageBox.information(
-            self, "BRIDGE CAST ONE", "Linux controller for the connected BRIDGE CAST ONE"))
+            self, "BRIDGE CAST ONE for Linux",
+            f"Version {APP_VERSION}\nUnofficial Linux controller for BRIDGE CAST ONE"))
         self.status = QLabel("Connecting…")
         self.status.setStyleSheet("color: #323232; background: #f5f5f5; font-size: 10px; padding-right: 10px;")
         menu.setCornerWidget(self.status, Qt.Corner.TopRightCorner)
@@ -985,6 +987,7 @@ class BridgeCastApp(QMainWindow):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", help="APP MIDI port; auto-detected by default")
+    parser.add_argument("--version", action="version", version=f"BRIDGE CAST ONE for Linux {APP_VERSION}")
     args = parser.parse_args()
     application = QApplication(sys.argv[:1])
     window = BridgeCastApp(args.port)
