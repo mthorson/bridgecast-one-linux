@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.14']
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Python requirements
+        run: python -m pip install -r requirements.txt
+      - name: Check scripts and version
+        run: |
+          bash -n packaging/build-release.sh
+          sh -n packaging/install.sh
+          python bridgecast_gui.py --version
+      - name: Test protocol and load GUI
+        run: |
+          python -m unittest -q test_bridgecast_protocol.py
+          python - <<'PY'
+          from PyQt6.QtWidgets import QApplication
+          from bridgecast_qt import BridgeCastApp
+
+          app = QApplication([])
+          window = BridgeCastApp(None, connect_device=False)
+          assert not window.windowIcon().isNull()
+          window.close()
+          PY

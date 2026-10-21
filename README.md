@@ -1,5 +1,7 @@
 # BRIDGE CAST ONE for Linux
 
+[![CI](https://github.com/mthorson/bridgecast-one-linux/actions/workflows/ci.yml/badge.svg)](https://github.com/mthorson/bridgecast-one-linux/actions/workflows/ci.yml)
+
 An unofficial Linux controller for the Roland BRIDGE CAST ONE audio mixer. The current release is **[v0.1.0 (preview)](https://github.com/mthorson/bridgecast-one-linux/releases/tag/v0.1.0)**. It reads the device's mixer state, shows live level meters, and exposes the controls listed below.
 
 ![BRIDGE CAST ONE Linux home screen](screenshots/bridge-cast-one-linux-home.png)

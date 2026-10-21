@@ -1,0 +1,81 @@
+name: Release packages
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to package
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    container: archlinux:base-devel
+    defaults:
+      run:
+        shell: bash
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Install build and runtime dependencies
+        run: pacman -Syu --noconfirm --needed git python python-pyqt6 alsa-utils alsa-lib github-cli
+      - name: Verify tag and test application
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          expected="v$(sed -n 's/^APP_VERSION = "\([^"]*\)"$/\1/p' bridgecast_qt.py)"
+          test "$RELEASE_TAG" = "$expected"
+          git rev-parse --verify "refs/tags/$RELEASE_TAG"
+          python bridgecast_gui.py --version
+          python -m unittest -q test_bridgecast_protocol.py
+          python - <<'PY'
+          from PyQt6.QtWidgets import QApplication
+          from bridgecast_qt import BridgeCastApp
+
+          app = QApplication([])
+          window = BridgeCastApp(None, connect_device=False)
+          assert not window.windowIcon().isNull()
+          window.close()
+          PY
+      - name: Build portable and Arch packages
+        run: |
+          useradd -m package-builder
+          chown -R package-builder:package-builder "$GITHUB_WORKSPACE"
+          runuser -u package-builder -- bash packaging/build-release.sh
+          test -s "dist/bridgecast-one-linux-${RELEASE_TAG#v}-linux.tar.gz"
+          test -s "dist/bridgecast-one-linux-${RELEASE_TAG#v}-1-any.pkg.tar.zst"
+      - name: Publish package assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            prerelease=()
+            if [[ "$RELEASE_TAG" == v0.* ]]; then prerelease=(--prerelease); fi
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --title "$RELEASE_TAG" --verify-tag --generate-notes \
+              --notes 'Download the Arch package or portable Linux archive below. See the README for installation requirements and commands.' \
+              "${prerelease[@]}"
+          fi
+          for asset in dist/bridgecast-one-linux-"${RELEASE_TAG#v}"-linux.tar.gz \
+                       dist/bridgecast-one-linux-"${RELEASE_TAG#v}"-1-any.pkg.tar.zst; do
+            name=${asset##*/}
+            if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+                --json assets --jq '.assets[].name' | grep -Fxq "$name"; then
+              echo "Already published: $name"
+            else
+              gh release upload "$RELEASE_TAG" "$asset" --repo "$GITHUB_REPOSITORY"
+            fi
+          done
