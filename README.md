@@ -69,6 +69,10 @@ See [CHANGELOG.md](CHANGELOG.md) for the release scope.
 
 Both release downloads are built from the `v0.1.0` tag with `bash packaging/build-release.sh`. The installer lives in `packaging/install.sh`; the Arch package template is in `packaging/arch/`.
 
+## Automation
+
+GitHub Actions runs the protocol tests and loads the GUI offscreen with Python 3.10 and 3.14 on pushes and pull requests. For a new release, update `APP_VERSION` in `bridgecast_qt.py`, this README, and the changelog, then push a matching `vX.Y.Z` tag. The release workflow tests the tagged app, builds both Linux downloads, and attaches them to the GitHub release. It can also be run manually for an existing tag.
+
 ## Artwork and ownership
 
 `assets/bridgecast-linux-icon.png` is the custom icon for this controller. The other graphics in `assets/` were extracted from software supplied by Roland with the device. BRIDGE CAST and Roland are trademarks of Roland Corporation. This project is not affiliated with Roland. No software license has been selected for this repository.
